@@ -13,6 +13,21 @@ import type { Expense } from '@/lib/types'
 type SortField = 'date' | 'amount'
 type SortDir = 'asc' | 'desc'
 
+function SortIcon({
+  field,
+  sortField,
+  sortDir,
+}: {
+  field: SortField
+  sortField: SortField
+  sortDir: SortDir
+}) {
+  if (sortField !== field) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+  return sortDir === 'asc'
+    ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
+    : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+}
+
 export function ExpenseList({
   expenses,
   onDelete,
@@ -39,13 +54,6 @@ export function ExpenseList({
     return mul * (a.amount - b.amount)
   })
 
-  function SortIcon({ field }: { field: SortField }) {
-    if (sortField !== field) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
-    return sortDir === 'asc'
-      ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
-      : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
-  }
-
   const toDelete = expenses.find((e) => e.id === deleteId)
 
   return (
@@ -60,7 +68,7 @@ export function ExpenseList({
                   className="flex items-center gap-1 hover:text-gray-900 transition-colors"
                   onClick={() => toggleSort('date')}
                 >
-                  Date <SortIcon field="date" />
+                  Date <SortIcon field="date" sortField={sortField} sortDir={sortDir} />
                 </button>
               </th>
               <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -74,7 +82,7 @@ export function ExpenseList({
                   className="flex items-center gap-1 ml-auto hover:text-gray-900 transition-colors"
                   onClick={() => toggleSort('amount')}
                 >
-                  Amount <SortIcon field="amount" />
+                  Amount <SortIcon field="amount" sortField={sortField} sortDir={sortDir} />
                 </button>
               </th>
               <th className="py-3 px-4" />
