@@ -1,101 +1,160 @@
-import Image from "next/image";
+// app/page.tsx
+'use client'
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import { DollarSign, Calendar, TrendingUp, Tag, PlusCircle } from 'lucide-react'
+import { useExpenses } from '@/hooks/useExpenses'
+import { SummaryCard } from '@/components/SummaryCard'
+import { EmptyState } from '@/components/EmptyState'
+import { CategoryBadge } from '@/components/CategoryBadge'
+import { CurrencyDisplay } from '@/components/CurrencyDisplay'
+import { formatCurrency, filterExpensesByDateRange, getMonthlyTotals, formatDate } from '@/lib/utils'
+import type { Category } from '@/lib/types'
+import { CATEGORIES } from '@/lib/types'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+const CategoryDonutChart = dynamic(
+  () => import('@/components/charts/CategoryDonutChart').then((m) => m.CategoryDonutChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-lg" /> },
+)
+const MonthlyBarChart = dynamic(
+  () => import('@/components/charts/MonthlyBarChart').then((m) => m.MonthlyBarChart),
+  { ssr: false, loading: () => <div className="h-56 animate-pulse bg-gray-50 rounded-lg" /> },
+)
+
+export default function DashboardPage() {
+  const { expenses, isLoaded } = useExpenses()
+
+  if (!isLoaded) {
+    return (
+      <div className="px-4 py-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+    )
+  }
+
+  if (expenses.length === 0) {
+    return (
+      <div className="px-4 py-8 max-w-5xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        </div>
+        <EmptyState
+          title="No expenses yet"
+          description="Add your first expense to see your spending dashboard."
+          actionLabel="Add your first expense"
+          actionHref="/expenses/new"
+        />
+      </div>
+    )
+  }
+
+  const thisMonthExpenses = filterExpensesByDateRange(expenses, 'month')
+  const thisWeekExpenses = filterExpensesByDateRange(expenses, 'week')
+  const monthlyTotals = getMonthlyTotals(expenses, 6)
+
+  const allTimeTotal = expenses.reduce((s, e) => s + e.amount, 0)
+  const monthTotal = thisMonthExpenses.reduce((s, e) => s + e.amount, 0)
+  const weekTotal = thisWeekExpenses.reduce((s, e) => s + e.amount, 0)
+
+  const topCategory = CATEGORIES.reduce<{ cat: Category; total: number } | null>((top, cat) => {
+    const total = thisMonthExpenses
+      .filter((e) => e.category === cat)
+      .reduce((s, e) => s + e.amount, 0)
+    if (total === 0) return top
+    if (!top || total > top.total) return { cat, total }
+    return top
+  }, null)
+
+  const recent = expenses.slice(0, 5)
+
+  return (
+    <div className="px-4 py-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <Link
+          href="/expenses/new"
+          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <PlusCircle className="w-4 h-4" />
+          Add Expense
+        </Link>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <SummaryCard
+          title="All Time"
+          value={formatCurrency(allTimeTotal)}
+          subtitle={`${expenses.length} expenses`}
+          icon={DollarSign}
+          color="indigo"
+        />
+        <SummaryCard
+          title="This Month"
+          value={formatCurrency(monthTotal)}
+          subtitle={`${thisMonthExpenses.length} expenses`}
+          icon={Calendar}
+          color="violet"
+        />
+        <SummaryCard
+          title="This Week"
+          value={formatCurrency(weekTotal)}
+          subtitle={`${thisWeekExpenses.length} expenses`}
+          icon={TrendingUp}
+          color="purple"
+        />
+        <SummaryCard
+          title="Top Category"
+          value={topCategory?.cat ?? '—'}
+          subtitle={topCategory ? formatCurrency(topCategory.total) + ' this month' : 'No data'}
+          icon={Tag}
+          color="amber"
+        />
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Spending by Category (This Month)</h2>
+          <CategoryDonutChart expenses={thisMonthExpenses} />
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Monthly Spending (Last 6 Months)</h2>
+          <MonthlyBarChart data={monthlyTotals} />
+        </div>
+      </div>
+
+      {/* Recent expenses */}
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-700">Recent Expenses</h2>
+          <Link href="/expenses" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+            View all →
+          </Link>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {recent.map((e) => (
+            <div key={e.id} className="flex items-center justify-between px-5 py-3.5">
+              <div className="min-w-0">
+                <p className="text-sm text-gray-900 truncate">{e.description}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-gray-400">{formatDate(e.date)}</span>
+                  <CategoryBadge category={e.category} />
+                </div>
+              </div>
+              <CurrencyDisplay
+                amount={e.amount}
+                className="text-sm font-semibold text-gray-900 shrink-0 ml-4"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
-  );
+  )
 }
