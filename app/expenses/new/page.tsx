@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useExpenses } from '@/hooks/useExpenses'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import type { ExpenseFormValues } from '@/lib/schema'
+import type { Category } from '@/lib/types'
 
 export default function NewExpensePage() {
   const router = useRouter()
@@ -14,7 +15,7 @@ export default function NewExpensePage() {
     addExpense({
       date: data.date,
       amount: parseFloat(data.amount),
-      category: data.category as import('@/lib/types').Category,
+      category: data.category as Category,
       description: data.description,
     })
     router.push('/expenses')

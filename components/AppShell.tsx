@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 
 function isActive(href: string, pathname: string): boolean {
   if (href === '/') return pathname === '/'
-  if (href === '/expenses') return pathname === '/expenses'
+  if (href === '/expenses') return pathname === '/expenses' || (pathname.startsWith('/expenses/') && !pathname.startsWith('/expenses/new'))
   return pathname.startsWith(href)
 }
 
