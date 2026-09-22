@@ -43,10 +43,9 @@ describe('getMonthlyTotals', () => {
   it('sums amounts for each month correctly', () => {
     // We test with known past data by mocking Date
     const RealDate = globalThis.Date
-    jest.spyOn(globalThis, 'Date').mockImplementation((...args) => {
+    jest.spyOn(globalThis, 'Date').mockImplementation((...args: unknown[]) => {
       if (args.length === 0) return new RealDate('2024-02-28')
-      // @ts-expect-error — spread on overloaded constructor
-      return new RealDate(...args)
+      return new RealDate(...(args as ConstructorParameters<typeof Date>))
     })
     const result = getMonthlyTotals(SAMPLE_EXPENSES, 2)
     const janEntry = result.find(r => r.month.startsWith('Jan'))
