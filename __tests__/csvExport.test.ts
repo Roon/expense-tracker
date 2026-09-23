@@ -10,7 +10,12 @@ const EXPENSES: Expense[] = [
 describe('generateCSV', () => {
   it('includes a header row', () => {
     const csv = generateCSV(EXPENSES)
-    expect(csv.split('\n')[0]).toBe('Date,Description,Category,Amount')
+    expect(csv.split('\n')[0]).toBe('Date,Category,Amount,Description')
+  })
+
+  it('orders row fields as Date, Category, Amount, Description', () => {
+    const csv = generateCSV(EXPENSES)
+    expect(csv.split('\n')[1]).toMatch(/,Food,25\.50,Lunch$/)
   })
 
   it('outputs one row per expense', () => {
@@ -38,6 +43,6 @@ describe('generateCSV', () => {
 
   it('returns empty string with header only for empty input', () => {
     const csv = generateCSV([])
-    expect(csv).toBe('Date,Description,Category,Amount')
+    expect(csv).toBe('Date,Category,Amount,Description')
   })
 })

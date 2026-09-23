@@ -9,13 +9,13 @@ function escapeCSVField(value: string): string {
 }
 
 export function generateCSV(expenses: Expense[]): string {
-  const header = 'Date,Description,Category,Amount'
+  const header = 'Date,Category,Amount,Description'
   const rows = expenses.map((e) =>
     [
       formatDate(e.date),
-      escapeCSVField(e.description),
       e.category,
       e.amount.toFixed(2),
+      escapeCSVField(e.description),
     ].join(','),
   )
   return [header, ...rows].join('\n')
