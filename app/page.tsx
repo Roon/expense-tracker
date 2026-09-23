@@ -3,7 +3,7 @@
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { DollarSign, Calendar, TrendingUp, Tag, PlusCircle } from 'lucide-react'
+import { DollarSign, Calendar, TrendingUp, Tag, PlusCircle, CloudUpload } from 'lucide-react'
 import { useExpenses } from '@/hooks/useExpenses'
 import { SummaryCard } from '@/components/SummaryCard'
 import { EmptyState } from '@/components/EmptyState'
@@ -76,13 +76,22 @@ export default function DashboardPage() {
     <div className="px-4 py-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <Link
-          href="/expenses/new"
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Add Expense
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/export"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <CloudUpload className="w-4 h-4" />
+            Share &amp; Export
+          </Link>
+          <Link
+            href="/expenses/new"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Add Expense
+          </Link>
+        </div>
       </div>
 
       {/* Summary cards */}

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { Expense, ExpenseFormData } from '@/lib/types'
 
-const STORAGE_KEY = 'expense-tracker-expenses'
+export const STORAGE_KEY = 'expense-tracker-expenses'
 
-function loadFromStorage(): Expense[] {
+export function loadFromStorage(): Expense[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
@@ -58,7 +58,8 @@ export function useExpenses() {
     })
   }, [])
 
-  const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date))
+  // Stable identity between renders so consumers can safely memoize on it.
+  const sorted = useMemo(() => [...expenses].sort((a, b) => b.date.localeCompare(a.date)), [expenses])
 
   return { expenses: sorted, isLoaded, addExpense, updateExpense, deleteExpense }
 }
