@@ -56,6 +56,8 @@ Field count per line: `[4, 5, 5, 5]`. Any spreadsheet or parser shifts every col
 
 **Recommendation, whichever version is adopted:** fix or retire `lib/csvExport.ts`. Use ISO dates or quote the field, and add a test that parses the output and checks the field count.
 
+> **Update:** fixed on branch `fix/csv-export-date-column` (commit `6866980`). The date field is now quoted, and tests parse the output to check field counts. It isn't merged yet, and the V1 branch still carries the bug until it's merged there.
+
 ---
 
 ## 3. V1: Simple CSV export
