@@ -12,7 +12,8 @@ export function generateCSV(expenses: Expense[]): string {
   const header = 'Date,Category,Amount,Description'
   const rows = expenses.map((e) =>
     [
-      formatDate(e.date),
+      // formatDate yields "Jan 15, 2024"; the comma must be quoted.
+      escapeCSVField(formatDate(e.date)),
       e.category,
       e.amount.toFixed(2),
       escapeCSVField(e.description),

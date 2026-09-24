@@ -7,6 +7,35 @@ const EXPENSES: Expense[] = [
   { id: '3', date: '2024-01-05', amount: 9.99, category: 'Entertainment', description: 'He said "nice"' },
 ]
 
+// Minimal RFC 4180 parser: splits on commas outside double quotes, unescapes "".
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = []
+  let field = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        field += '"'
+        i++
+      } else if (ch === '"') {
+        inQuotes = false
+      } else {
+        field += ch
+      }
+    } else if (ch === '"') {
+      inQuotes = true
+    } else if (ch === ',') {
+      fields.push(field)
+      field = ''
+    } else {
+      field += ch
+    }
+  }
+  fields.push(field)
+  return fields
+}
+
 describe('generateCSV', () => {
   it('includes a header row', () => {
     const csv = generateCSV(EXPENSES)
@@ -39,6 +68,17 @@ describe('generateCSV', () => {
   it('escapes double quotes inside descriptions', () => {
     const csv = generateCSV(EXPENSES)
     expect(csv).toContain('"He said ""nice"""')
+  })
+
+  it('gives every row the same number of fields as the header', () => {
+    const lines = generateCSV(EXPENSES).split('\n')
+    const width = parseCSVLine(lines[0]).length
+    for (const line of lines) expect(parseCSVLine(line)).toHaveLength(width)
+  })
+
+  it('keeps the formatted date intact in the Date column', () => {
+    const row = parseCSVLine(generateCSV(EXPENSES).split('\n')[1])
+    expect(row).toEqual(['Jan 15, 2024', 'Food', '25.50', 'Lunch'])
   })
 
   it('returns empty string with header only for empty input', () => {
