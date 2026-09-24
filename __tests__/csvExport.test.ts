@@ -1,5 +1,7 @@
-import { generateCSV } from '@/lib/csvExport'
+import { expenseCsvSerializer } from '@/lib/exporting'
 import type { Expense } from '@/lib/types'
+
+const generateCSV = (expenses: Expense[]) => expenseCsvSerializer.serialize(expenses)
 
 const EXPENSES: Expense[] = [
   { id: '1', date: '2024-01-15', amount: 25.5, category: 'Food', description: 'Lunch' },
@@ -39,7 +41,12 @@ function parseCSVLine(line: string): string[] {
 describe('generateCSV', () => {
   it('includes a header row', () => {
     const csv = generateCSV(EXPENSES)
-    expect(csv.split('\n')[0]).toBe('Date,Description,Category,Amount')
+    expect(csv.split('\n')[0]).toBe('Date,Category,Amount,Description')
+  })
+
+  it('orders row fields as Date, Category, Amount, Description', () => {
+    const csv = generateCSV(EXPENSES)
+    expect(csv.split('\n')[1]).toMatch(/,Food,25\.50,Lunch$/)
   })
 
   it('outputs one row per expense', () => {
@@ -73,11 +80,11 @@ describe('generateCSV', () => {
 
   it('keeps the formatted date intact in the Date column', () => {
     const row = parseCSVLine(generateCSV(EXPENSES).split('\n')[1])
-    expect(row).toEqual(['Jan 15, 2024', 'Lunch', 'Food', '25.50'])
+    expect(row).toEqual(['Jan 15, 2024', 'Food', '25.50', 'Lunch'])
   })
 
   it('returns empty string with header only for empty input', () => {
     const csv = generateCSV([])
-    expect(csv).toBe('Date,Description,Category,Amount')
+    expect(csv).toBe('Date,Category,Amount,Description')
   })
 })
