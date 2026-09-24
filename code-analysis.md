@@ -6,7 +6,7 @@
 
 | Version | Branch | Commit | Concept |
 |---|---|---|---|
-| V1 | `feature-data-export-v1` | `64abdf2` | One button, CSV download |
+| V1 | `feature-data-export-v1` | `64abdf2` (since refactored, see §3 update) | One button, CSV download |
 | V2 | `feature-data-export-v2` | `73c5a21` | Advanced local export dialog (CSV/JSON/PDF, filters, preview) |
 | V3 | `feature-data-export-v3` | `fb8de86` | Cloud-style Export Hub (templates, destinations, jobs, schedules, share links) |
 
@@ -61,6 +61,23 @@ Field count per line: `[4, 5, 5, 5]`. Any spreadsheet or parser shifts every col
 ---
 
 ## 3. V1: Simple CSV export
+
+> **Update: SOLID refactor (commit `a6d4fb1`).** After this analysis, V1 was restructured around the SOLID principles. What users see is unchanged: tests that pin the exact CSV bytes, file type, filename and URL cleanup passed before and after, and both buttons were checked in a real browser. The rest of this section describes V1 as it was at `64abdf2`. What changed since:
+>
+> - **Structure:** `lib/csvExport.ts` is gone. A new `lib/exporting/` has one job per module:
+>   - `expenseColumns.ts`: which columns exist, as a list of `{ header, value }`
+>   - `csv.ts`: a CSV writer that works for any item type
+>   - `browserFileSaver.ts`: how the file reaches the user
+>   - `exporter.ts`: joins a format to a delivery method
+>   - `index.ts`: the one place concrete pieces are chosen
+>
+>   The button is its own component, `components/ExportDataButton.tsx`, and accepts a substitute exporter. The Expenses page uses `lib/exporting` directly.
+> - **Small interfaces:** `Serializer`, `FileSaver` and `Exporter`. Adding a column means adding to the list, and a new format is a new `Serializer`; neither touches existing code.
+> - **Escaping:** every cell now goes through the escaping function, headers included. That rules out the kind of bug that caused the unquoted date, where one column forgot to escape.
+> - **Tests:** 44 in total, up from 29. The additions are characterization tests, unit tests for each module using in-memory fakes, and a test for the button.
+> - **Size:** about 100 lines across six small modules, up from about 30 in one file. The dashboard bundle is 4.83 kB, up from 4.63 kB.
+> - **Still open, deliberately:** formulas in descriptions aren't blocked, and there's no UTF-8 BOM. Fixing either would change the output, so they were out of scope for a behaviour-preserving refactor. On V1 they now live in `lib/exporting/csv.ts` and `browserFileSaver.ts`, not in `lib/csvExport.ts` as issues #3 and #11 in §7 say. Each is now a small, isolated change.
+> - **Effect on the recommendation (§8):** V1's new `Serializer`/`FileSaver` contracts are a lighter-weight alternative to V2's format registry as the base to build on.
 
 ### Files created / modified
 
