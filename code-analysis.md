@@ -56,7 +56,7 @@ Field count per line: `[4, 5, 5, 5]`. Any spreadsheet or parser shifts every col
 
 **Recommendation, whichever version is adopted:** fix or retire `lib/csvExport.ts`. Use ISO dates or quote the field, and add a test that parses the output and checks the field count.
 
-> **Update:** fixed on branch `fix/csv-export-date-column` (commit `6866980`). The date field is now quoted, and tests parse the output to check field counts. It's merged into `feature-data-export-v1` (merge commit `5c4f477`), so V1's export is now correct. It isn't in `main`, V2 or V3 yet, so the Expenses page export on those branches still has the bug.
+> **Update:** fixed on branch `fix/csv-export-date-column` (commit `6866980`). The date field is now quoted, and tests parse the output to check field counts. It's now on every branch: fast-forwarded into `main`, and merged into `feature-data-export-v1` (`5c4f477`), `feature-data-export-v2` (`87ced9f`) and `feature-data-export-v3` (`a5ff961`). The Expenses page export no longer splits the date on any branch.
 
 ---
 
