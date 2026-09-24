@@ -9,7 +9,7 @@ import { ExpenseFilters } from '@/components/ExpenseFilters'
 import { ExpenseList } from '@/components/ExpenseList'
 import { EmptyState } from '@/components/EmptyState'
 import { filterExpensesByDateRange, formatCurrency, type DateRange } from '@/lib/utils'
-import { downloadCSV } from '@/lib/csvExport'
+import { expenseCsvExporter } from '@/lib/exporting'
 import type { Category } from '@/lib/types'
 
 export default function ExpensesPage() {
@@ -34,7 +34,7 @@ export default function ExpensesPage() {
   const total = filtered.reduce((sum, e) => sum + e.amount, 0)
 
   function handleExport() {
-    downloadCSV(filtered)
+    expenseCsvExporter.export(filtered)
     setExportDone(true)
     setTimeout(() => setExportDone(false), 2000)
   }

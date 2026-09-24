@@ -1,5 +1,7 @@
-import { generateCSV } from '@/lib/csvExport'
+import { expenseCsvSerializer } from '@/lib/exporting'
 import type { Expense } from '@/lib/types'
+
+const generateCSV = (expenses: Expense[]) => expenseCsvSerializer.serialize(expenses)
 
 const EXPENSES: Expense[] = [
   { id: '1', date: '2024-01-15', amount: 25.5, category: 'Food', description: 'Lunch' },

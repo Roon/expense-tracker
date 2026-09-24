@@ -3,14 +3,14 @@
 
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { DollarSign, Calendar, TrendingUp, Tag, PlusCircle, Download } from 'lucide-react'
+import { DollarSign, Calendar, TrendingUp, Tag, PlusCircle } from 'lucide-react'
 import { useExpenses } from '@/hooks/useExpenses'
 import { SummaryCard } from '@/components/SummaryCard'
 import { EmptyState } from '@/components/EmptyState'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { CurrencyDisplay } from '@/components/CurrencyDisplay'
+import { ExportDataButton } from '@/components/ExportDataButton'
 import { formatCurrency, filterExpensesByDateRange, getMonthlyTotals, formatDate } from '@/lib/utils'
-import { downloadCSV } from '@/lib/csvExport'
 import type { Category } from '@/lib/types'
 import { CATEGORIES } from '@/lib/types'
 
@@ -78,13 +78,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => downloadCSV(expenses)}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export Data
-          </button>
+          <ExportDataButton expenses={expenses} />
           <Link
             href="/expenses/new"
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
